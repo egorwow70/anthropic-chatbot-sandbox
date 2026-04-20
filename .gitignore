@@ -29,3 +29,4 @@ dist/
 test_ws.js
 test_ws.html
 test_ws_client.py
+test_json_mode.py

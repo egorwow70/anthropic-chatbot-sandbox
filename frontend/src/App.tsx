@@ -17,6 +17,8 @@ function App() {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
+  const [jsonMode, setJsonMode] = useState(false)
+  const [jsonSchema, setJsonSchema] = useState('')
   const wsRef = useRef<WebSocket | null>(null)
   const reconnectTimeoutRef = useRef<number | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -156,12 +158,35 @@ function App() {
 
     // Send message through WebSocket
     try {
-      wsRef.current.send(JSON.stringify({
+      const payload: any = {
         messages: updatedMessages.map(msg => ({
           role: msg.role,
           content: msg.content
         }))
-      }))
+      }
+
+      // Add JSON mode if enabled
+      if (jsonMode) {
+        payload.json_mode = true
+
+        // Add JSON schema if provided
+        if (jsonSchema.trim()) {
+          try {
+            payload.json_schema = JSON.parse(jsonSchema)
+          } catch (e) {
+            console.error('Invalid JSON schema:', e)
+            setLoading(false)
+            setMessages(prev => [...prev, {
+              role: 'assistant',
+              content: '⚠️ Invalid JSON schema provided. Please check your schema format.',
+              streaming: false
+            }])
+            return
+          }
+        }
+      }
+
+      wsRef.current.send(JSON.stringify(payload))
     } catch (error) {
       console.error('Failed to send message:', error)
       setLoading(false)
@@ -246,20 +271,45 @@ function App() {
       </div>
 
       <div className="input-container">
-        <textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyPress={handleKeyPress}
-          placeholder="Ask a math question... (e.g., 'How do I solve 2x + 5 = 15?')"
-          disabled={loading}
-          rows={3}
-        />
-        <button
-          onClick={sendMessage}
-          disabled={loading || !input.trim()}
-        >
-          Send
-        </button>
+        <div className="json-mode-controls">
+          <label className="json-mode-toggle">
+            <input
+              type="checkbox"
+              checked={jsonMode}
+              onChange={(e) => setJsonMode(e.target.checked)}
+              disabled={loading}
+            />
+            <span>JSON Mode</span>
+          </label>
+          {jsonMode && (
+            <div className="json-schema-input">
+              <textarea
+                value={jsonSchema}
+                onChange={(e) => setJsonSchema(e.target.value)}
+                placeholder='Optional JSON schema (e.g., {"type": "object", "properties": {...}})'
+                disabled={loading}
+                rows={2}
+                className="schema-textarea"
+              />
+            </div>
+          )}
+        </div>
+        <div className="input-row">
+          <textarea
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask a math question... (e.g., 'How do I solve 2x + 5 = 15?')"
+            disabled={loading}
+            rows={3}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={loading || !input.trim()}
+          >
+            Send
+          </button>
+        </div>
       </div>
     </div>
   )

@@ -106,21 +106,38 @@ async def websocket_chat(websocket: WebSocket):
             message_data = json.loads(data)
             messages = message_data.get("messages", [])
 
+            # Optional JSON format parameters
+            use_json_mode = message_data.get("json_mode", False)
+            json_schema = message_data.get("json_schema", None)
+
             if not messages:
                 await websocket.send_json({"type": "error", "content": "No messages provided"})
                 continue
 
             try:
+                # Prepare system prompt with JSON mode instructions if needed
+                system_prompt = SYSTEM_PROMPT
+                if use_json_mode:
+                    json_instruction = "\n\nIMPORTANT: You MUST respond with valid JSON only. Do not include any text before or after the JSON."
+                    if json_schema:
+                        # Add schema specification
+                        schema_str = json.dumps(json_schema, indent=2)
+                        json_instruction += f"\n\nYour response must conform to this JSON schema:\n{schema_str}"
+                    system_prompt = SYSTEM_PROMPT + json_instruction
+
+                # Prepare API parameters
+                api_params = {
+                    "model": "claude-haiku-4-5-20251001",
+                    "max_tokens": 1024,
+                    "temperature": 0.6,
+                    "system": system_prompt,
+                    "messages": messages,
+                }
+
                 # Stream response from Claude API
-                with client.messages.stream(
-                    model="claude-haiku-4-5-20251001",
-                    max_tokens=1024,
-                    temperature=0.6,
-                    system=SYSTEM_PROMPT,
-                    messages=messages
-                ) as stream:
+                with client.messages.stream(**api_params) as stream:
                     # Send start signal
-                    await websocket.send_json({"type": "start"})
+                    await websocket.send_json({"type": "start", "json_mode": use_json_mode})
 
                     # Stream text chunks
                     for text in stream.text_stream:

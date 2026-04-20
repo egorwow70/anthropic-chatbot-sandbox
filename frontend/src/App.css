@@ -314,13 +314,14 @@
 
 .input-container {
   display: flex;
+  flex-direction: column;
   gap: 10px;
   padding: 20px;
   background: white;
   border-top: 1px solid #e0e0e0;
 }
 
-.input-container textarea {
+.input-row textarea {
   flex: 1;
   padding: 12px;
   border: 2px solid #e0e0e0;
@@ -331,17 +332,17 @@
   transition: border-color 0.2s;
 }
 
-.input-container textarea:focus {
+.input-row textarea:focus {
   outline: none;
   border-color: #667eea;
 }
 
-.input-container textarea:disabled {
+.input-row textarea:disabled {
   background: #f5f5f5;
   cursor: not-allowed;
 }
 
-.input-container button {
+.input-row button {
   padding: 12px 24px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
@@ -353,11 +354,11 @@
   transition: transform 0.2s, opacity 0.2s;
 }
 
-.input-container button:hover:not(:disabled) {
+.input-row button:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 
-.input-container button:disabled {
+.input-row button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
@@ -378,4 +379,88 @@
   51%, 100% {
     opacity: 0;
   }
+}
+
+/* JSON Mode Controls */
+.json-mode-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.json-mode-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.json-mode-toggle input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #667eea;
+}
+
+.json-mode-toggle input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.json-schema-input {
+  margin-top: 4px;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    max-height: 200px;
+    transform: translateY(0);
+  }
+}
+
+.schema-textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #d0d0d0;
+  border-radius: 6px;
+  font-family: 'Courier New', monospace;
+  font-size: 12px;
+  resize: vertical;
+  background: white;
+  transition: border-color 0.2s;
+}
+
+.schema-textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.schema-textarea:disabled {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
+
+.input-row textarea {
+  flex: 1;
 }
