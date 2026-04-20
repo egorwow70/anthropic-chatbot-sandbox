@@ -21,3 +21,11 @@ dist/
 .idea/
 *.swp
 *.swo
+
+# Claude Code
+.claude/
+
+# Test files (temporary testing, not part of the app)
+test_ws.js
+test_ws.html
+test_ws_client.py

@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from anthropic import Anthropic
 import os
+import json
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -11,9 +12,9 @@ env_local = Path(__file__).parent.parent / ".env.local"
 env_file = Path(__file__).parent.parent / ".env"
 
 if env_local.exists():
-    load_dotenv(dotenv_path=env_local)
+    load_dotenv(dotenv_path=env_local, override=True)
 else:
-    load_dotenv(dotenv_path=env_file)
+    load_dotenv(dotenv_path=env_file, override=True)
 
 app = FastAPI()
 
@@ -92,6 +93,55 @@ async def chat(request: ChatRequest):
         return ChatResponse(response=response.content[0].text)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.websocket("/ws/chat")
+async def websocket_chat(websocket: WebSocket):
+    await websocket.accept()
+
+    try:
+        while True:
+            # Receive message from client
+            data = await websocket.receive_text()
+            message_data = json.loads(data)
+            messages = message_data.get("messages", [])
+
+            if not messages:
+                await websocket.send_json({"type": "error", "content": "No messages provided"})
+                continue
+
+            try:
+                # Stream response from Claude API
+                with client.messages.stream(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=1024,
+                    temperature=0.6,
+                    system=SYSTEM_PROMPT,
+                    messages=messages
+                ) as stream:
+                    # Send start signal
+                    await websocket.send_json({"type": "start"})
+
+                    # Stream text chunks
+                    for text in stream.text_stream:
+                        await websocket.send_json({
+                            "type": "content",
+                            "content": text
+                        })
+
+                    # Send completion signal
+                    await websocket.send_json({"type": "done"})
+
+            except Exception as e:
+                await websocket.send_json({
+                    "type": "error",
+                    "content": f"Error: {str(e)}"
+                })
+
+    except WebSocketDisconnect:
+        print("Client disconnected")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
 
 
 @app.get("/health")
