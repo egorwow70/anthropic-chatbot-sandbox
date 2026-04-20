@@ -1,4 +1,9 @@
 import { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 import './App.css'
 
 interface Message {
@@ -67,8 +72,8 @@ function App() {
       <div className="chat-header">
         <div className="chat-header-content">
           <div>
-            <h1>Claude Chatbot</h1>
-            <p>Powered by Claude Haiku</p>
+            <h1>Math Tutor</h1>
+            <p>Your patient AI math tutor powered by Claude</p>
           </div>
           {messages.length > 0 && (
             <button
@@ -85,7 +90,10 @@ function App() {
       <div className="messages-container">
         {messages.length === 0 && (
           <div className="empty-state">
-            <p>Send a message to start chatting!</p>
+            <p>👋 Hi! I'm your math tutor. Ask me a math question to get started!</p>
+            <p style={{ fontSize: '14px', marginTop: '10px', opacity: 0.8 }}>
+              I'll help guide you through problems step-by-step.
+            </p>
           </div>
         )}
         {messages.map((message, index) => (
@@ -94,7 +102,12 @@ function App() {
             className={`message ${message.role}`}
           >
             <div className="message-content">
-              {message.content}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm, remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+              >
+                {message.content}
+              </ReactMarkdown>
             </div>
           </div>
         ))}
@@ -112,7 +125,7 @@ function App() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyPress={handleKeyPress}
-          placeholder="Type your message..."
+          placeholder="Ask a math question... (e.g., 'How do I solve 2x + 5 = 15?')"
           disabled={loading}
           rows={3}
         />

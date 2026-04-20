@@ -1,6 +1,6 @@
-# Claude Chatbot - React + Python
+# Math Tutor - React + Python + Claude
 
-A simple chatbot application with a React frontend and Python FastAPI backend that uses Claude Haiku.
+An AI-powered math tutor chatbot with a React frontend and Python FastAPI backend that uses Claude Haiku. The tutor helps students learn math through guided problem-solving rather than just providing answers.
 
 ## Project Structure
 
@@ -101,6 +101,16 @@ Open your browser and go to `http://localhost:5173`
 
 ## Features
 
+- **Math Tutor Persona**: Custom system prompt that makes Claude act as a patient math tutor
+  - Guides students through problems with questions instead of giving direct answers
+  - Encourages critical thinking and problem-solving skills
+  - Provides hints and step-by-step guidance
+- **Rich Markdown Formatting**: Both user messages and AI responses support full markdown
+  - **Bold**, *italic*, and `code` formatting
+  - Numbered lists and bullet points
+  - Code blocks with syntax highlighting
+  - Math equations with LaTeX/KaTeX rendering (inline and block)
+  - Tables, blockquotes, and links
 - **Conversation History**: Full context maintained across messages - Claude remembers previous exchanges
 - Simple chatbot UI with message history display
 - Real-time communication with Claude Haiku
@@ -131,6 +141,9 @@ Open your browser and go to `http://localhost:5173`
 - React 18
 - TypeScript
 - Vite
+- react-markdown (markdown rendering)
+- remark-gfm (GitHub Flavored Markdown)
+- remark-math & rehype-katex (LaTeX math equations)
 - CSS3 (with animations)
 
 **Backend:**
@@ -145,6 +158,23 @@ The backend is configured to use:
 - Model: `claude-haiku-4-5-20251001`
 - Max tokens: `100`
 - CORS enabled for `http://localhost:5173`
+
+### Customizing the System Prompt
+
+The AI's behavior is controlled by the `SYSTEM_PROMPT` constant in `backend/main.py`. To change the AI's personality or role:
+
+1. Open `backend/main.py`
+2. Find the `SYSTEM_PROMPT` variable (around line 40)
+3. Edit the prompt to define different behavior
+4. Restart the backend server
+
+**Current role**: Patient math tutor who guides students through problems
+
+**Example alternative prompts**:
+- Science tutor
+- Writing coach
+- Programming mentor
+- General conversational assistant
 
 ## Security Notes
 
@@ -169,6 +199,39 @@ The backend is configured to use:
 **Port already in use:**
 - Backend: Change port in `scripts/run-backend.js`
 - Frontend: Vite will automatically suggest an alternative port
+
+## Using Markdown in Messages
+
+Both you and the AI can use markdown formatting:
+
+**Basic formatting:**
+- `**bold text**` → **bold text**
+- `*italic text*` → *italic text*
+- `` `code` `` → `code`
+
+**Lists:**
+```
+1. First step
+2. Second step
+3. Third step
+
+- Bullet point
+- Another point
+```
+
+**Math equations:**
+- Inline: `$x^2 + y^2 = r^2$` → $x^2 + y^2 = r^2$
+- Block: `$$\frac{-b \pm \sqrt{b^2-4ac}}{2a}$$`
+
+**Code blocks:**
+```
+\`\`\`python
+def factorial(n):
+    return 1 if n <= 1 else n * factorial(n-1)
+\`\`\`
+```
+
+The AI is instructed to use markdown formatting to make explanations clearer!
 
 ## How It Works
 
