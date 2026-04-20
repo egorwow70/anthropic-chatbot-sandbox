@@ -84,6 +84,7 @@ async def chat(request: ChatRequest):
         response = client.messages.create(
             model="claude-haiku-4-5-20251001",
             max_tokens=100,
+            temperature=0.6,
             system=SYSTEM_PROMPT,
             messages=messages
         )
