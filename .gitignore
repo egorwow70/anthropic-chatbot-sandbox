@@ -1,0 +1,23 @@
+# Local environment variables (not committed)
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+venv/
+env/
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo

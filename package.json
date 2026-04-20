@@ -1,0 +1,19 @@
+{
+  "name": "claude-chatbot",
+  "version": "1.0.0",
+  "description": "Claude chatbot with React frontend and Python backend",
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "node scripts/run-backend.js",
+    "install:all": "npm install && npm run install:frontend && npm run install:backend",
+    "install:frontend": "cd frontend && npm install",
+    "install:backend": "node scripts/install-backend.js"
+  },
+  "keywords": ["chatbot", "claude", "react", "fastapi"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
