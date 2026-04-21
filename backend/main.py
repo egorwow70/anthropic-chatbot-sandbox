@@ -76,6 +76,14 @@ class ChatResponse(BaseModel):
     response: str
 
 
+class Task(BaseModel):
+    task: str
+
+
+class GenerateTasksResponse(BaseModel):
+    tasks: list[Task]
+
+
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
@@ -91,6 +99,88 @@ async def chat(request: ChatRequest):
         )
 
         return ChatResponse(response=response.content[0].text)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/generate-evaluation-tasks", response_model=GenerateTasksResponse)
+async def generate_evaluation_tasks(num_tasks: int = 3):
+    """
+    Generate evaluation dataset tasks for prompt evaluation.
+    Returns an array of tasks for Python, JSON, or Regex AWS-related exercises.
+
+    Args:
+        num_tasks: Number of tasks to generate (default: 3)
+    """
+    try:
+        # Construct the prompt
+        prompt = f"""Generate a evaluation dataset for a prompt evaluation. The dataset will be used to evaluate prompts
+that generate Python, JSON, or Regex specifically for AWS-related tasks. Generate an array of JSON objects,
+each representing task that requires Python, JSON, or a Regex to complete.
+
+Example output:
+```json
+[
+    {{
+        "task": "Description of task",
+    }},
+    ...additional
+]
+```
+
+* Focus on tasks that can be solved by writing a single Python function, a single JSON object, or a regular expression.
+* Focus on tasks that do not require writing much code
+
+Please generate {num_tasks} objects."""
+
+        # Create system prompt for JSON output
+        json_system_prompt = """You are a helpful AI assistant that generates evaluation tasks.
+You MUST respond with valid JSON only. Do not include any text before or after the JSON.
+Your response must be a JSON array of objects, where each object has a "task" field containing a string description."""
+
+        # Call Claude API with JSON mode instructions
+        response = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=2048,
+            temperature=0.8,  # Higher temperature for more creative task generation
+            system=json_system_prompt,
+            messages=[
+                {"role": "user", "content": prompt}
+            ]
+        )
+
+        # Parse the JSON response
+        response_text = response.content[0].text
+
+        # Try to extract JSON if wrapped in markdown code blocks
+        if "```json" in response_text:
+            # Extract JSON from code block
+            start = response_text.find("```json") + 7
+            end = response_text.find("```", start)
+            response_text = response_text[start:end].strip()
+        elif "```" in response_text:
+            # Extract from generic code block
+            start = response_text.find("```") + 3
+            end = response_text.find("```", start)
+            response_text = response_text[start:end].strip()
+
+        # Parse JSON
+        tasks_data = json.loads(response_text)
+
+        # Validate it's an array
+        if not isinstance(tasks_data, list):
+            raise ValueError("Response is not a JSON array")
+
+        # Convert to response model
+        tasks = [Task(task=item["task"]) for item in tasks_data]
+
+        return GenerateTasksResponse(tasks=tasks)
+
+    except json.JSONDecodeError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to parse JSON response: {str(e)}"
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

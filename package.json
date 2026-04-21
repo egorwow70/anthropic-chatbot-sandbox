@@ -8,7 +8,10 @@
     "dev:backend": "node scripts/run-backend.js",
     "install:all": "npm install && npm run install:frontend && npm run install:backend",
     "install:frontend": "cd frontend && npm install",
-    "install:backend": "node scripts/install-backend.js"
+    "install:backend": "node scripts/install-backend.js",
+    "generate:tasks": "node scripts/generate-evaluation-tasks.js",
+    "generate:tasks:10": "node scripts/generate-evaluation-tasks.js 10",
+    "generate:tasks:custom": "node scripts/generate-evaluation-tasks.js"
   },
   "keywords": ["chatbot", "claude", "react", "fastapi"],
   "author": "",
